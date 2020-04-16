@@ -36,13 +36,13 @@ def process_image(image_file, input_dir, output_dir):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--input-dir", default="data/sample/images/", type=str)
-    parser.add_argument("--output-dir", default="data/preprocessing/images/", type=str)
+    parser.add_argument("--input_dir", default="data/sample/images/", type=str)
+    parser.add_argument("--output_dir", default="data/preprocessing/images/", type=str)
     parser.add_argument("--num", default=-1, type=int)
     args = parser.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
     img_list = os.listdir(args.input_dir)
     for idx, image_file in enumerate(img_list):
         process_image(image_file, args.input_dir, args.output_dir)
-        if idx == 2:
+        if idx == args.num:
             break
