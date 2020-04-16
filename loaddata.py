@@ -4,8 +4,6 @@ import tensorflow as tf
 import csv
 import os
 
-PREPROCESSED_SPLIT = 16
-
 def makeDataset(x_path, csv_filename, batch_size):
     x_file_list = []
     y_str_list = []
@@ -59,7 +57,7 @@ def makeDataset(x_path, csv_filename, batch_size):
     return dataset
 
 
-def makeDatasetPreprocessed(x_path, csv_filename, batch_size, preprocessed, x_list_filename=None):
+def makeDatasetPreprocessed(x_path, csv_filename, batch_size, preprocessed, preprocessed_split, x_list_filename=None):
     x_y_dict = {}
     with open(csv_filename) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=",")
@@ -73,13 +71,13 @@ def makeDatasetPreprocessed(x_path, csv_filename, batch_size, preprocessed, x_li
 
     x_file_list = []
     y_str_list = []
-    
+
     if x_list_filename:
         with open(x_list_filename) as x_list_file:
             line = x_list_file.readline()
             while line:
                 line = line.strip("\n")
-                for i in range(PREPROCESSED_SPLIT):
+                for i in range(preprocessed_split):
                     x_file_list.append(
                         os.path.join(x_path, line.split(r".")[0]) + f"_{i}.png"
                     )
@@ -89,7 +87,7 @@ def makeDatasetPreprocessed(x_path, csv_filename, batch_size, preprocessed, x_li
         x_file_list = []
         for x_file in copy_x_list:
             if preprocessed:
-                for i in range(PREPROCESSED_SPLIT):
+                for i in range(preprocessed_split):
                     x_file_list.append(
                         os.path.join(x_path, x_file.split(r".")[0]) + f"_{i}.png"
                     )
