@@ -44,7 +44,9 @@ def train(net, dataset, epochs, model_save_dir, logdir):
         verbose=1,
         save_best_only=True,
     )
-    tc = tf.keras.callbacks.TensorBoard(log_dir=log_dir, update_freq='batch', write_graph=False)
+    tc = tf.keras.callbacks.TensorBoard(
+        log_dir=log_dir, update_freq=25, write_graph=False, profile_batch=0
+    )
 
     net.fit(
         dataset,
