@@ -1,30 +1,46 @@
 from tensorflow import keras
+import efficientnet.tfkeras as efn
 import tensorflow as tf
 
+# Install efficientnet using "pip install -U --pre efficientnet"
 
-class Modified_ResNet50(keras.models.Model):
-    def __init__(self, output_size=14):
-        super(Modified_ResNet50, self).__init__()
+
+class Model(keras.models.Model):
+    def __init__(self, output_size=14, model_type="efficientnet"):
+        super(Model, self).__init__()
         self.output_size = output_size
+        self.model_type = model_type
 
-    def build(self, input_shape=(224, 224, 3)):
-        self.resnet = keras.applications.resnet_v2.ResNet50V2(
-            include_top=False, weights=None, input_shape=input_shape
-        )
+    def build(self, input_shape=(244, 244, 3)):
+        if self.model_type == "resnet":
+            self.default_model = keras.applications.resnet_v2.ResNet50V2(
+                include_top=False, weights=None, input_shape=input_shape
+            )
+        elif self.model_type == "efficientnet":
+            self.default_model = efn.EfficientNetB4(
+                include_top=False, weights=None, input_shape=input_shape
+            )
         self.pooling_layer = keras.layers.GlobalAveragePooling2D()
+        self.dropout_layer = keras.layers.Dropout(0.2)
         self.output_layer = keras.layers.Dense(self.output_size)
         self.model = tf.keras.Sequential(
-            [self.resnet, self.pooling_layer, self.output_layer]
+            [
+                self.default_model,
+                self.pooling_layer,
+                self.dropout_layer,
+                self.output_layer,
+            ]
         )
-        super(Modified_ResNet50, self).build(input_shape)
+        super(Model, self).build(input_shape)
 
     def call(self, inputs):
         if len(inputs.shape) == 3:
             inputs = tf.expand_dims(inputs, 0)
         return self.model(inputs)
 
-if __name__ == '__main__':
-    model = Modified_ResNet50()
+
+if __name__ == "__main__":
+    model = Model()
     model.compile(
         loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
         optimizer=tf.keras.optimizers.Adam(),

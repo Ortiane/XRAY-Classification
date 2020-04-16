@@ -1,6 +1,6 @@
 import tensorflow as tf
 from loaddata import makeDataset
-from model import Modified_ResNet50
+from model import Model
 
 def train(net, dataset, epochs):
     for epoch_idx in range(epochs):
@@ -10,7 +10,7 @@ def train(net, dataset, epochs):
     return net
 
 def main():
-    net = Modified_ResNet50()
+    net = Model()
     net.compile(
         loss=tf.nn.sigmoid_cross_entropy_with_logits,
         optimizer=tf.keras.optimizers.Adam(),
