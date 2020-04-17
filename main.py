@@ -76,7 +76,7 @@ def main():
 
     strategy = tf.distribute.MirroredStrategy()
     with strategy.scope():
-        net = Model()
+        net = Model(model_type="mobilenet")
         net.compile(
             loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
             optimizer=tf.keras.optimizers.Adam(),
