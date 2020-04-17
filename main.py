@@ -31,11 +31,13 @@ def parse_args():
     parser.add_argument("--preprocessed", default="True", type=str)
     parser.add_argument("--preprocessed_split", default=4, type=int)
     parser.add_argument("--log_dir", default="runs", type=str)
+    parser.add_argument("--train_txt",default="data/train_val_list.txt", type=str)
+    parser.add_argument("--test_txt",default="data/test_list.txt", type=str)
     args = parser.parse_args()
     return args
 
 
-def train(net, dataset, epochs, model_save_dir, logdir):
+def train(net, dataset, testdataset, epochs, model_save_dir, logdir):
     log_dir = os.path.join(logdir, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
     mc = tf.keras.callbacks.ModelCheckpoint(
         model_save_dir + "model.h5",
@@ -51,7 +53,7 @@ def train(net, dataset, epochs, model_save_dir, logdir):
     net.fit(
         dataset,
         epochs=epochs,
-        validation_data=dataset,
+        validation_data=testdataset,
         callbacks=[mc, tc],
         shuffle=True,
     )
@@ -70,9 +72,17 @@ def main():
     PREPROCESSED = str2bool(args.preprocessed)
     PREPROCESSED_SPLIT = args.preprocessed_split
 
-    dataset = makeDatasetPreprocessed(
-        X_PATH, CSV_FILE, BATCH_SIZE, PREPROCESSED, PREPROCESSED_SPLIT
+    # dataset = makeDatasetPreprocessed(
+    #     X_PATH, CSV_FILE, BATCH_SIZE, PREPROCESSED, PREPROCESSED_SPLIT
+    # )
+    train_dataset = makeDatasetPreprocessed(
+        X_PATH, CSV_FILE, BATCH_SIZE, PREPROCESSED, PREPROCESSED_SPLIT,args.train_txt
     )
+    print(train_dataset)
+    test_dataset = makeDatasetPreprocessed(
+        X_PATH, CSV_FILE, BATCH_SIZE, PREPROCESSED, PREPROCESSED_SPLIT,args.test_txt
+    )
+    print(test_dataset)
 
     strategy = tf.distribute.MirroredStrategy()
     with strategy.scope():
@@ -85,7 +95,7 @@ def main():
         net.build()
         net.summary()
 
-        trained_net = train(net, dataset, EPOCHS, MODEL_DIR, LOG_DIR)
+        trained_net = train(net, train_dataset, test_dataset, EPOCHS, MODEL_DIR, LOG_DIR)
 
 
 if __name__ == "__main__":
