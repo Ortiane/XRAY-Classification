@@ -39,7 +39,7 @@ def train(net, dataset, epochs, model_save_dir, logdir):
     log_dir = os.path.join(logdir, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
     mc = tf.keras.callbacks.ModelCheckpoint(
         model_save_dir + "model.h5",
-        monitor="loss",
+        monitor="val_binary_accuracy",
         mode="max",
         verbose=1,
         save_best_only=True,
