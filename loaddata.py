@@ -75,14 +75,19 @@ def makeDatasetPreprocessed(x_path, csv_filename, batch_size, preprocessed, prep
     if x_list_filename:
         with open(x_list_filename) as x_list_file:
             line = x_list_file.readline()
+            no_findings = 0
             while line:
                 line = line.strip("\n")
-                for i in range(preprocessed_split):
-                    x_file_list.append(
-                        os.path.join(x_path, line.split(r".")[0]) + f"_{i}.png"
-                    )
-                    y_str_list.append(x_y_dict[line.rstrip('.png')])
+                if x_y_dict[line.rstrip('.png')] == 'No Finding':
+                    no_findings += 1
+                else:
+                    for i in range(preprocessed_split):
+                        x_file_list.append(
+                            os.path.join(x_path, line.split(r".")[0]) + f"_{i}.png"
+                        )
+                        y_str_list.append(x_y_dict[line.rstrip('.png')])
                 line = x_list_file.readline()
+            print('num of no findings: {}'.format(no_findings))
     else:
         copy_x_list = list(x_y_dict.keys())
         x_file_list = []

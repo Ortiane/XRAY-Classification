@@ -28,12 +28,14 @@ class Model(keras.models.Model):
         self.pooling_layer = keras.layers.GlobalAveragePooling2D()
         self.dropout_layer = keras.layers.Dropout(0.2)
         self.output_layer = keras.layers.Dense(self.output_size)
+        self.sigmoid = tf.keras.layers.Activation(tf.keras.activations.sigmoid)
         self.model = tf.keras.Sequential(
             [
                 self.default_model,
                 self.pooling_layer,
                 self.dropout_layer,
                 self.output_layer,
+                self.sigmoid,
             ]
         )
         super(Model, self).build(input_shape)

@@ -42,9 +42,9 @@ def train(net, dataset, testdataset, epochs, model_save_dir, logdir):
     mc = tf.keras.callbacks.ModelCheckpoint(
         model_save_dir + "model.h5",
         monitor="loss",
-        mode="max",
+        mode="min",
         verbose=1,
-        save_best_only=True,
+        save_best_only=False,
     )
     tc = tf.keras.callbacks.TensorBoard(
         log_dir=log_dir, update_freq=25, write_graph=False, profile_batch=0
