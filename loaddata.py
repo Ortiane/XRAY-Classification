@@ -81,7 +81,8 @@ def makeDatasetPreprocessed(x_path, csv_filename, batch_size, preprocessed, prep
                     x_file_list.append(
                         os.path.join(x_path, line.split(r".")[0]) + f"_{i}.png"
                     )
-                    y_str_list.append(x_y_dict[line])
+                    y_str_list.append(x_y_dict[line.rstrip('.png')])
+                line = x_list_file.readline()
     else:
         copy_x_list = list(x_y_dict.keys())
         x_file_list = []
