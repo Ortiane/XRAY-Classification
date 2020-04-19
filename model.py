@@ -46,10 +46,17 @@ class Model(keras.models.Model):
         return self.model(inputs)
 
 
+def multiplication_f_loss(y_true, y_pred):
+    return - (tf.reduce_sum(y_pred * y_true) - 0.1 * tf.reduce_sum(y_pred * (1 - y_true)))
+
+def recall(y_true, y_pred):
+    return tf.reduce_sum(tf.dtypes.cast(y_pred * y_true > 0.5, tf.float32)) / tf.reduce_sum(y_true)
+
+
 if __name__ == "__main__":
     model = Model()
     model.compile(
-        loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+        loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
         optimizer=tf.keras.optimizers.Adam(),
         metrics=["accuracy"],
     )

@@ -6,7 +6,7 @@ import h5py
 import tensorflow as tf
 
 from loaddata import *
-from model import Model
+from model import *
 
 
 # https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
@@ -83,14 +83,16 @@ def main():
         X_PATH, CSV_FILE, BATCH_SIZE, PREPROCESSED, PREPROCESSED_SPLIT,args.test_txt
     )
     print(test_dataset)
+    # train_dataset = test_dataset
 
     strategy = tf.distribute.MirroredStrategy()
     with strategy.scope():
         net = Model(model_type="mobilenet")
         net.compile(
-            loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+            # loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+            loss=multiplication_f_loss,
             optimizer=tf.keras.optimizers.Adam(),
-            metrics=["binary_accuracy"],
+            metrics=["binary_accuracy", recall],
         )
         net.build()
         net.summary()
