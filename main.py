@@ -34,6 +34,7 @@ def parse_args():
     parser.add_argument("--log_dir", default="runs", type=str)
     parser.add_argument("--train_txt", default="data/train_val_list.txt", type=str)
     parser.add_argument("--test_txt", default="data/test_list.txt", type=str)
+    parser.add_argument('--checkpoint_path', default="")
     parser.add_argument("--model_name", default="mobilenet", type=str)
     args = parser.parse_args()
     return args
@@ -147,6 +148,7 @@ def main():
     LOG_DIR = args.log_dir
     PREPROCESSED = str2bool(args.preprocessed)
     PREPROCESSED_SPLIT = args.preprocessed_split
+    CHECKPOINT_PATH = args.checkpoint_path
     MODEL_NAME = args.model_name
 
     train_dataset = makeDatasetPreprocessed(
@@ -172,6 +174,8 @@ def main():
         )
         net.build()
         net.summary()
+        if CHECKPOINT_PATH:
+            net.load_weights(CHECKPOINT_PATH)
 
         trained_net = train(
             net, train_dataset, test_dataset, EPOCHS, MODEL_DIR, LOG_DIR, MODEL_NAME
