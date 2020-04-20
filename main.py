@@ -34,14 +34,15 @@ def parse_args():
     parser.add_argument("--log_dir", default="runs", type=str)
     parser.add_argument("--train_txt", default="data/train_val_list.txt", type=str)
     parser.add_argument("--test_txt", default="data/test_list.txt", type=str)
+    parser.add_argument("--model_name", default="mobilenet", type=str)
     args = parser.parse_args()
     return args
 
 
-def train(net, dataset, testdataset, epochs, model_save_dir, logdir):
+def train(net, dataset, testdataset, epochs, model_save_dir, logdir, model_name):
     log_dir = os.path.join(logdir, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
     mc = tf.keras.callbacks.ModelCheckpoint(
-        model_save_dir + "model.h5",
+        model_save_dir + model_name + "_model.h5",
         monitor="val_binary_accuracy",
         mode="max",
         verbose=1,
@@ -146,6 +147,7 @@ def main():
     LOG_DIR = args.log_dir
     PREPROCESSED = str2bool(args.preprocessed)
     PREPROCESSED_SPLIT = args.preprocessed_split
+    MODEL_NAME = args.model_name
 
     train_dataset = makeDatasetPreprocessed(
         X_PATH, CSV_FILE, BATCH_SIZE, PREPROCESSED, PREPROCESSED_SPLIT, args.train_txt
@@ -154,24 +156,25 @@ def main():
     test_dataset = makeDatasetPreprocessed(
         X_PATH, CSV_FILE, BATCH_SIZE, PREPROCESSED, PREPROCESSED_SPLIT, args.test_txt
     )
-    # print(test_dataset)
+    print(test_dataset)
     # dataset = makeDatasetPreprocessed(
     #     X_PATH, CSV_FILE, BATCH_SIZE, PREPROCESSED, PREPROCESSED_SPLIT
     # )
     # test_dataset = train_dataset = dataset
     strategy = tf.distribute.MirroredStrategy()
     with strategy.scope():
-        net = Model(model_type="mobilenet")
+        net = Model(model_type=MODEL_NAME)
         net.compile(
             loss=sigmoid_focal_crossentropy,
             optimizer=tf.keras.optimizers.Adam(),
             metrics=[recall, precision, f1_score],
+            # metrics=[recall],
         )
         net.build()
         net.summary()
 
         trained_net = train(
-            net, train_dataset, test_dataset, EPOCHS, MODEL_DIR, LOG_DIR
+            net, train_dataset, test_dataset, EPOCHS, MODEL_DIR, LOG_DIR, MODEL_NAME
         )
 
 
