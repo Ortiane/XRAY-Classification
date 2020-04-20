@@ -119,14 +119,13 @@ def makeDatasetPreprocessed(x_path, csv_filename, batch_size, preprocessed, prep
         "Fibrosis": 11,
         "Pneumonia": 12,
         "Hernia": 13,
+        "No Finding": 14,
     }
 
     y_list = []
     for i in range(len(y_str_list)):
-        labels = [0] * 14
+        labels = [0] * len(y_dict)
         for y_logit in y_str_list[i].split("|"):
-            if y_logit == "No Finding":
-                continue
             labels[y_dict[y_logit]] = 1
         labels = tf.constant(labels, dtype=tf.float32)
         y_list.append(labels)

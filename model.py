@@ -7,7 +7,7 @@ import tensorflow as tf
 
 
 class Model(keras.models.Model):
-    def __init__(self, output_size=14, model_type="efficientnet"):
+    def __init__(self, output_size=15, model_type="efficientnet"):
         super(Model, self).__init__()
         self.output_size = output_size
         self.model_type = model_type
@@ -28,14 +28,14 @@ class Model(keras.models.Model):
         self.pooling_layer = keras.layers.GlobalAveragePooling2D()
         self.dropout_layer = keras.layers.Dropout(0.2)
         self.output_layer = keras.layers.Dense(self.output_size)
-        self.sigmoid = tf.keras.layers.Activation(tf.keras.activations.sigmoid)
+        self.activation = tf.keras.layers.Activation(tf.keras.activations.sigmoid)
         self.model = tf.keras.Sequential(
             [
                 self.default_model,
                 self.pooling_layer,
                 self.dropout_layer,
                 self.output_layer,
-                self.sigmoid,
+                self.activation,
             ]
         )
         super(Model, self).build(input_shape)
@@ -44,14 +44,6 @@ class Model(keras.models.Model):
         if len(inputs.shape) == 3:
             inputs = tf.expand_dims(inputs, 0)
         return self.model(inputs)
-
-
-def multiplication_f_loss(y_true, y_pred):
-    return - (tf.reduce_sum(y_pred * y_true) - 0.1 * tf.reduce_sum(y_pred * (1 - y_true)))
-
-def recall(y_true, y_pred):
-    return tf.reduce_sum(tf.dtypes.cast(y_pred * y_true > 0.5, tf.float32)) / tf.reduce_sum(y_true)
-
 
 if __name__ == "__main__":
     model = Model()
