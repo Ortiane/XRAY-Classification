@@ -3,7 +3,8 @@ import datetime
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc, confusion_matrix
+from sklearn.metrics import roc_curve, auc, multilabel_confusion_matrix, confusion_matrix
+import itertools
 
 import h5py
 import tensorflow as tf
@@ -141,8 +142,13 @@ def test(net, dataset, model_name):
 
 
 #   # Calculate the confusion matrix.
-    cm = confusion_matrix(y_true, np.argmax(y_pred, axis=1))
-    plot_confusion_matrix(cm, labels)
+    # print(np.argmax(y_true,axis=1))
+    # print(np.argmax(y_pred,axis=1))
+    cm = confusion_matrix(np.argmax(y_true,axis=1),np.argmax(y_pred,axis=1))
+   # cm = multilabel_confusion_matrix(y_true, tf.round(y_pred))
+    plot_confusion_matrix(cm, labels, model_name)
+
+
 
     # return res
 
@@ -165,7 +171,7 @@ def plot_ROC(labels, test_Y, pred_Y, model_name='mobilenet'):
 
 
 
-def plot_confusion_matrix(cm, class_names):
+def plot_confusion_matrix(cm, class_names, model_name='mobilenet'):
   """
   Returns a matplotlib figure containing the plotted confusion matrix.
 
@@ -182,6 +188,7 @@ def plot_confusion_matrix(cm, class_names):
   plt.yticks(tick_marks, class_names)
 
   # Normalize the confusion matrix.
+  np.seterr(divide='ignore', invalid='ignore')
   cm = np.around(cm.astype('float') / cm.sum(axis=1)[:, np.newaxis], decimals=2)
 
   # Use white text if squares are dark; otherwise black.
