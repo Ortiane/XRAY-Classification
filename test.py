@@ -3,7 +3,7 @@ import datetime
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve, auc, confusion_matrix
 
 import h5py
 import tensorflow as tf
@@ -66,6 +66,23 @@ def train(net, dataset, testdataset, epochs, model_save_dir, logdir):
 
     return net
 
+labels = [
+        "Emphysema",
+        "Infiltration",
+        "Pleural_Thickening",
+        "Pneumothorax",
+        "Cardiomegaly",
+        "Atelectasis",
+        "Edema",
+        "Effusion",
+        "Consolidation",
+        "Mass",
+        "Nodule",
+        "Fibrosis",
+        "Pneumonia",
+        "Hernia",
+        # "No Finding"
+    ]
 
 def test(net, dataset, model_name):
     # log_dir = os.path.join(logdir, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
@@ -107,23 +124,7 @@ def test(net, dataset, model_name):
     # test_X, test_Y = next(create_data_generator(
     #     valid, labels, 10000, None, target_size=input_shape))
     # pred_Y = model.predict(test_X, batch_size=32, verbose=True)
-    labels = [
-        "Emphysema",
-        "Infiltration",
-        "Pleural_Thickening",
-        "Pneumothorax",
-        "Cardiomegaly",
-        "Atelectasis",
-        "Edema",
-        "Effusion",
-        "Consolidation",
-        "Mass",
-        "Nodule",
-        "Fibrosis",
-        "Pneumonia",
-        "Hernia",
-        # "No Finding"
-    ]
+    
     y_pred = net.predict(dataset)
     y_true = []
     i = 0
@@ -138,6 +139,10 @@ def test(net, dataset, model_name):
 
     plot_ROC(labels, y_true, y_pred, model_name)
 
+
+#   # Calculate the confusion matrix.
+    cm = confusion_matrix(y_true, np.argmax(y_pred, axis=1))
+    plot_confusion_matrix(cm, labels)
 
     # return res
 
@@ -157,6 +162,61 @@ def plot_ROC(labels, test_Y, pred_Y, model_name='mobilenet'):
 
     fig.savefig(ROC_image_file_path)
     print('Saved ROC plot at'+ROC_image_file_path)
+
+
+
+def plot_confusion_matrix(cm, class_names):
+  """
+  Returns a matplotlib figure containing the plotted confusion matrix.
+
+  Args:
+    cm (array, shape = [n, n]): a confusion matrix of integer classes
+    class_names (array, shape = [n]): String names of the integer classes
+  """
+  figure = plt.figure(figsize=(8, 8))
+  plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+  plt.title("Confusion matrix")
+  plt.colorbar()
+  tick_marks = np.arange(len(class_names))
+  plt.xticks(tick_marks, class_names, rotation=45)
+  plt.yticks(tick_marks, class_names)
+
+  # Normalize the confusion matrix.
+  cm = np.around(cm.astype('float') / cm.sum(axis=1)[:, np.newaxis], decimals=2)
+
+  # Use white text if squares are dark; otherwise black.
+  threshold = cm.max() / 2.
+  for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+    color = "white" if cm[i, j] > threshold else "black"
+    plt.text(j, i, cm[i, j], horizontalalignment="center", color=color)
+
+  plt.tight_layout()
+  plt.ylabel('True label')
+  plt.xlabel('Predicted label')
+  
+  cm_image_file_path = os.path.join(
+        model_name + '_CM.png')
+
+  figure.savefig(cm_image_file_path)
+  print('Saved ROC plot at'+cm_image_file_path)
+
+# def log_confusion_matrix(epoch, logs):
+#   # Use the model to predict the values from the validation dataset.
+#   test_pred_raw = model.predict(test_images)
+#   test_pred = np.argmax(test_pred_raw, axis=1)
+
+#   # Calculate the confusion matrix.
+#   cm = sklearn.metrics.confusion_matrix(test_labels, test_pred)
+#   # Log the confusion matrix as an image summary.
+#   figure = plot_confusion_matrix(cm, class_names=labels)
+#   cm_image = plot_to_image(figure)
+
+#   # Log the confusion matrix as an image summary.
+#   with file_writer_cm.as_default():
+#     tf.summary.image("Confusion Matrix", cm_image, step=epoch)
+
+
+
 
 def main():
     args = parse_args()
@@ -178,6 +238,10 @@ def main():
     print(test_dataset)
 
     strategy = tf.distribute.MirroredStrategy()
+    # logdir = os.path.join(LOG_DIR, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+    # file_writer_cm = tf.summary.create_file_writer(logdir + '/cm')
+    # # Define the per-epoch callback.
+    # cm_callback = keras.callbacks.LambdaCallback(on_epoch_end=log_confusion_matrix)
     with strategy.scope():
         net = Model(model_type=MODEL_NAME)
         net.compile(

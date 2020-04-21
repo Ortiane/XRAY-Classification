@@ -173,6 +173,7 @@ def main():
             # metrics=[recall],
         )
         net.build()
+        net.load_weights('save/prev_model.h5')
         net.summary()
         if CHECKPOINT_PATH:
             net.load_weights(CHECKPOINT_PATH)
